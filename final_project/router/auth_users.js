@@ -11,10 +11,8 @@ const isValid = (username)=>{ //returns boolean
     return user.username === username
   });
   if (hasUser.length > 0){
-    return true;
-  } else { 
     return false;
-  }
+  } return true;
 }
 
 const authenticatedUser = (username,password)=>{ //returns boolean
@@ -32,10 +30,15 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 //only registered users can login
 regd_users.post("/login", (req,res) => {
   //Write your code here
-  const user = req.body.user;
+  const user = req.query.username;
+  const pass = req.query.password;
 
-  if(!user) {
-    return res.status(404).json({message: "Body empty"});
+  if(!user || !pass) {
+    return res.status(404).json({message: "Username and/or Password not provided"});
+  }
+
+  if (!authenticatedUser(user,pass)) {
+    return res.status(404).json({message: "User does not exist"});
   }
   
   let accessToken = jwt.sign({
