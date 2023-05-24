@@ -4,9 +4,10 @@ let books = require("./booksdb.js");
 const regd_users = express.Router();
 
 let users = [];
+let reviewCount = 0;
 
+//check if username is valid
 const isValid = (username)=>{ //returns boolean
-//write code to check is the username is valid
   let hasUser = users.filter((user) => {
     return user.username === username
   });
@@ -15,8 +16,8 @@ const isValid = (username)=>{ //returns boolean
   } return true;
 }
 
+//check if username and password match the one we have in records
 const authenticatedUser = (username,password)=>{ //returns boolean
-//write code to check if username and password match the one we have in records.
   let validUser = users.filter((user) => {
     return (user.username === username && user.password === password)
   });
@@ -29,7 +30,6 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 
 //only registered users can login
 regd_users.post("/login", (req,res) => {
-  //Write your code here
   const user = req.query.username;
   const pass = req.query.password;
 
@@ -46,16 +46,31 @@ regd_users.post("/login", (req,res) => {
   }, 'access', {expiresIn: 60 * 60});
 
   req.session.authenticated = {
-    accessToken
+    accessToken,
+    user
   }
 
   return res.status(200).send("User successfully logged in");
 });
 
 // Add a book review
+//TODO: if user has existing review, then update; otherwise add
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  let review = req.query.review
+  let user = req.session.authenticated.user
+  let bookVals = Object.values(books);
+  
+  for (let i = 0; i < Object.keys(books).length-1; i++) {
+    for (let j = 0; j < Object.keys(books[i].reviews).length-1; j++) {
+      if (books[i].reviews[j].user === user) {
+        books[i].reviews[j]
+      }
+    }
+  } 
+  
+  books[req.params.isbn].reviews[reviewCount++] = {"user": user, "review": review}
+
+  return res.status(200).send({message: "Review successfully posted!"});
 });
 
 module.exports.authenticated = regd_users;
