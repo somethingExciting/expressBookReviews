@@ -33,7 +33,7 @@ regd_users.post("/login", (req,res) => {
   const pass = req.query.password;
 
   if(!user || !pass) {
-    return res.status(404).json({message: "Username and/or Password not provided"});
+    return res.status(400).json({message: "Username and/or Password not provided"});
   }
 
   if (!authenticatedUser(user,pass)) {
@@ -53,7 +53,6 @@ regd_users.post("/login", (req,res) => {
 });
 
 // Add a book review
-//TODO: if user has existing review, then update; otherwise add
 regd_users.put("/auth/review/:isbn", (req, res) => {
   let review = req.query.review
   let user = req.session.authenticated.user
