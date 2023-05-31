@@ -4,7 +4,6 @@ let books = require("./booksdb.js");
 const regd_users = express.Router();
 
 let users = [];
-let reviewCount = 0;
 
 //check if username is valid
 const isValid = (username)=>{ //returns boolean
@@ -58,19 +57,35 @@ regd_users.post("/login", (req,res) => {
 regd_users.put("/auth/review/:isbn", (req, res) => {
   let review = req.query.review
   let user = req.session.authenticated.user
-  let bookVals = Object.values(books);
   
-  for (let i = 0; i < Object.keys(books).length-1; i++) {
-    for (let j = 0; j < Object.keys(books[i].reviews).length-1; j++) {
-      if (books[i].reviews[j].user === user) {
-        books[i].reviews[j]
+  if (books[req.params.isbn].reviews.length > 0) {
+    for (let i = 0; i < books[req.params.isbn].reviews.length-1; i++) {
+      if (books[req.params.isbn].reviews[i].user === user) {
+        books[req.params.isbn].reviews[i].review = review
       }
     }
-  } 
-  
-  books[req.params.isbn].reviews[reviewCount++] = {"user": user, "review": review}
+    return res.status(200).send({message: "Review successfully edited!"});
+  } else {
+    books[req.params.isbn].reviews[0] = {"user": user, "review": review}
+    return res.status(200).send({message: "Review successfully posted!"});
+  }
+});
 
-  return res.status(200).send({message: "Review successfully posted!"});
+//delete a book review
+regd_users.delete("/auth/review/:isbn", (req,res) => {
+  let user = req.session.authenticated.user
+  let reviews = Object.keys(books[req.params.isbn].reviews).length
+  
+  if (reviews > 0) {
+    for (let i = 0; i < reviews; i++) {
+      if (books[req.params.isbn].reviews[i].user === user) {
+        delete books[req.params.isbn].reviews[i]
+        return res.status(200).send({message: "Review successfully deleted!"});
+      }
+    }
+  }
+
+  return res.status(400).send({message: "No reviews to delete..."});
 });
 
 module.exports.authenticated = regd_users;
